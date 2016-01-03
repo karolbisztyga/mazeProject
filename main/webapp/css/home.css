@@ -1,0 +1,31 @@
+html, body {
+    font-family: Courier New;
+}
+
+#create-maze-link, #create-maze-link:hover, #create-maze-link:focus {
+    border-radius: 12px;
+    border: 1px solid #000;
+    display: block;
+    text-align: center;
+    text-decoration: none;
+    color: #333;
+    outline: none;
+    cursor: pointer;
+    width: 100%;
+    padding: 20px;
+    margin: 10px 0 0 0;
+    font-size: 24px;
+    
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    
+    transition: background .2s;
+}
+
+#create-maze-link:hover {
+    background: rgba(0,0,0,.3);
+}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>create new maze</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="libs/animate.css" />
+        <link rel="stylesheet" href="css/createNewMaze.css" />
+        <link rel="stylesheet" href="css/global.css" />
+        
+        <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+        <script src="js/global.js"></script>
+        <script src="js/createNewMaze.js"></script>
+        
+    </head>
+    <body>
+        <!--
+        <div class="glyphicon glyphicon-off" id="login-div"></div>
+        -->
+        <div class="container">
+            <div class="row" id="toolbar">
+                <div id="generate-wrapper" class="col-xs-12">
+                    <input min="3" max="100" type="number" id="generate-width" /> X
+                    <input min="3" max="100" type="number" id="generate-height" />
+                    <input type="button" value="generate" id="generate-button" />
+                    <input type="button" value="load" id="load" />
+                    <input type="button" value="save" id="save" />
+                </div>
+                <div id="field-manager-wrapper" class="col-xs-12">
+                    <div id="field-manager" class="container-fluid">
+                        <!--<div class="col-xs-4 item-wrapper">
+                            <input type="button" value="item" id="item" />
+                        </div>-->
+                    </div>
+                </div>
+            </div>       
+            <div class="row" id="map-container">
+                <div id="map-wrapper">
+                    
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
