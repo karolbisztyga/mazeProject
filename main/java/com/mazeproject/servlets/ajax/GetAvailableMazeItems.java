@@ -1,18 +1,20 @@
-package com.mazeproject.servlets;
+package com.mazeproject.servlets.ajax;
 
-import com.mazeproject.servlets.support.Security;
-import com.mazeproject.servlets.support.UserSessionStorage;
 import java.io.IOException;
-import javax.servlet.RequestDispatcher;
+import java.io.PrintWriter;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import org.json.JSONObject;
 
-public class Login extends HttpServlet {
+/**
+ *
+ * @author BB
+ */
+@WebServlet(name = "GetAvailableMazeItems", urlPatterns = {"/GetAvailableMazeItems"})
+public class GetAvailableMazeItems extends HttpServlet {
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -26,15 +28,7 @@ public class Login extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        RequestDispatcher rd = getServletContext().getNamedDispatcher("default");
-    	HttpServletRequest wrapped = new HttpServletRequestWrapper(request) {
-            @Override
-            public String getServletPath() {
-                return "login.html";
-            }
-    	};
-        wrapped.setAttribute("securityLevel", getServletConfig().getInitParameter("securityLevel"));
-    	rd.forward(wrapped, response);
+        throw new UnsupportedOperationException("This operation is not supported");
     }
 
     /**
@@ -48,17 +42,10 @@ public class Login extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        if(Security.login(
-                request.getParameter("name"),
-                request.getParameter("password"),
-                session)) {
-            response.sendRedirect("home");
-        } else {
-            response.sendRedirect("login");
-        }
+        JSONObject ob = new JSONObject();
+        
+        response.setContentType("application/json");
+        response.getWriter().print(ob.toString());
     }
-    
-    
     
 }

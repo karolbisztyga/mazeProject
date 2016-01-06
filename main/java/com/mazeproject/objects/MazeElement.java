@@ -1,6 +1,6 @@
 package com.mazeproject.objects;
 
-public interface MazeElement {
+public class MazeElement {
     
     /**
      * 0    -   Floor
@@ -9,13 +9,27 @@ public interface MazeElement {
      * 3    -   Trap
      * 4    -   Hole
      * 5    -   Portal
-     * 
-     * 6    -   Empty
-     * 7    -   Wall
-     * 8    -   Door
-     * 9    -   SecretDoor
      */
-    public int getCode();
-    public void activity();
+    
+    /**
+     * 0    -   Empty
+     * 1    -   Wall
+     * 2    -   Door
+     * 3    -   SecretDoor
+     */
+    
+    private MazeItem item;
+    private int right;
+    private int bottom;
+
+    public MazeElement(MazeItem item, int right, int bottom) {
+        this.item = item;
+        this.right = right;
+        this.bottom = bottom;
+    }
+    
+    public MazeElement() {
+        this(null,0,0);
+    }
     
 }

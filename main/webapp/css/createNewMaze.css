@@ -9,11 +9,20 @@
     height: 40px;
 }
 
-#field-manager-wrapper {
-    height: 160px;
+#field-manager-wrapper, #edge-manager-wrapper {
+    overflow: auto;
+    height: 60px;
+    line-height: 60px;
+}
+
+.manager-title {
+    height: 20px;
+    line-height: 20px;
+    text-align: center;
 }
 
 #map-container {
+    position: relative;
     padding: 10px;
     min-height: 400px;
     background: rgba(0,0,0,.5);
@@ -46,40 +55,41 @@
     position: absolute;
     opacity: 0;
     transition: .4s opacity;
+    z-index: 10;
 }
 
-.maze-field:hover > .maze-field-wall-edit{
+    .maze-field:hover > .maze-field-wall-edit{
     opacity: 1;
 }
 
 .maze-field-wall-edit-right, .maze-field-wall-edit-left {
-    width: 20%;
+    width: 20px;
     height: 100%;
 }
 
 .maze-field-wall-edit-right {
-    right: 0;
+    right: -10px;
     top: 0;
 }
 
 .maze-field-wall-edit-left {
-    left: 0;
+    left: -10px;
     top: 0;
 }
 
 .maze-field-wall-edit-top, .maze-field-wall-edit-bottom {
     width: 100%;
-    height: 20%;
+    height: 20px;
 }
 
 .maze-field-wall-edit-top {
     left: 0;
-    top: 0;
+    top: -10px;
 }
 
 .maze-field-wall-edit-bottom {
     left: 0;
-    bottom: 0;
+    bottom: -10px;
 }
 
 #edges > div {
@@ -100,19 +110,51 @@
     background: rgba(0,0,0,.3);
 }
 
-#load, #save {
-    display: none;
-}
-/*
-.item-wrapper {
-    padding: 10px;
-}
-
-.item-wrapper > input {
-    display: block;
-    width: 100px;
-    margin: 0 auto;
-    padding: 5px;
+.item-wrapper > .item, .material-wrapper > .material {
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
     text-align: center;
     font-size: 20px;
-}*/
+    cursor: pointer;
+    
+    transition: .3s backround, .1s border;
+}
+
+.item-wrapper > .item:hover, .material-wrapper > .material:hover {
+    background: rgba(0,0,0,.3);
+}
+
+.item-wrapper > .item-selected, .material-wrapper > .material-selected {
+    border: 1px solid #000;
+}
+
+.item-label {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100px;
+    height: 100px;
+    line-height: 100px;
+    text-align: center;
+    font-size: 60px;
+    font-weight: 900;
+    z-index: 5;
+}
+
+#maze-saved {
+    position: absolute;
+    height: 30px;
+    line-height: 30px;
+    width: 200px;
+    text-align: center;
+    bottom: 0;
+    opacity: 0;
+    left: calc(50% - 100px);
+    background: #999;
+    transition: .3s opacity;
+}
+
+#current-cost {
+    font-weight: 900;
+}

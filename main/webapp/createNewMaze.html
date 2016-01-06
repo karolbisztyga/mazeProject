@@ -25,18 +25,24 @@
                     <input min="3" max="100" type="number" id="generate-width" /> X
                     <input min="3" max="100" type="number" id="generate-height" />
                     <input type="button" value="generate" id="generate-button" />
-                    <input type="button" value="load" id="load" />
-                    <input type="button" value="save" id="save" />
+                    <input type="button" value="upload" id="upload" />
+                    Current cost: <span id="current-cost">0</span>$
+                </div>
+                <div class="col-xs-12 manager-title">
+                    FIELDS MATERIALS
                 </div>
                 <div id="field-manager-wrapper" class="col-xs-12">
-                    <div id="field-manager" class="container-fluid">
-                        <!--<div class="col-xs-4 item-wrapper">
-                            <input type="button" value="item" id="item" />
-                        </div>-->
-                    </div>
+                    <div id="field-manager" class="container-fluid"></div>
+                </div>
+                <div class="col-xs-12 manager-title">
+                    EDGES MATERIALS
+                </div>
+                <div id="edge-manager-wrapper" class="col-xs-12">
+                    <div id="edge-manager" class="container-fluid"></div>
                 </div>
             </div>       
             <div class="row" id="map-container">
+                <div id="maze-saved">saved</div>
                 <div id="map-wrapper">
                     
                 </div>

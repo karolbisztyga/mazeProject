@@ -44,6 +44,24 @@ http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
                     <param-value>user</param-value>
                 </init-param>
 	</servlet>
+        
+	<servlet>
+		<servlet-name>GetUserData</servlet-name>
+		<servlet-class>com.mazeproject.servlets.ajax.GetUserData</servlet-class>
+                <init-param>
+                    <param-name>securityLevel</param-name>
+                    <param-value>user</param-value>
+                </init-param>
+	</servlet>
+        
+	<servlet>
+		<servlet-name>CheckMaze</servlet-name>
+		<servlet-class>com.mazeproject.servlets.ajax.CheckMaze</servlet-class>
+                <init-param>
+                    <param-name>securityLevel</param-name>
+                    <param-value>user</param-value>
+                </init-param>
+	</servlet>
         <!--        SERVLETS                -->
         
         <!--        SERVLETS MAPPING        -->
@@ -65,6 +83,16 @@ http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 	<servlet-mapping>
 		<servlet-name>Logout</servlet-name>
 		<url-pattern>/logout</url-pattern>
+	</servlet-mapping>
+        
+	<servlet-mapping>
+		<servlet-name>GetUserData</servlet-name>
+		<url-pattern>/getUserData</url-pattern>
+	</servlet-mapping>
+        
+	<servlet-mapping>
+		<servlet-name>CheckMaze</servlet-name>
+		<url-pattern>/checkMaze</url-pattern>
 	</servlet-mapping>
         
         <servlet-mapping>

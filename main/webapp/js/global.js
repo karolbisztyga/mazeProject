@@ -6,13 +6,13 @@ $(document).ready(function(){
     }*/
     
     $.ajax({
-        url: "login",
+        url: "getUserData",
         type: "POST",
         data: {
             requestType:"ajax"
         },
         success: function(result){
-            console.log(result);
+            //console.log(result);
             var loggedIn = result["loggedIn"];
             
             var logInLink = $(document.createElement("a"));

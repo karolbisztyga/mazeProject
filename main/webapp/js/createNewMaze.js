@@ -1,51 +1,51 @@
 $(document).ready(function(){
     
-    //var isEdited = false;
+    var isEdited = false;
     var mazeFieldSize = 100;
     var fields = [];
-    var items = [];
-    /*
-    var edgesSettings = {
-        //topEdge: "top",
-        rightEdge: "right",
-        bottomEdge: "bottom",
-        //leftEdge: "left"
-    };
-    */
-    (function(){
-        resize();
-        $("#generate-height").val("5");
-        $("#generate-width").val("5");
-        if(getCookie("maze")!==false) {
-            $("#load").css("display","initial");
+    var userMoney = 100;
+    var items = [
+        {
+            label:"START",
+            sign:"S",
+            price: 5
+        },
+        {
+            label:"FINISH",
+            sign:"F",
+            price: 5
+        },
+        {
+            label:"TRAP",
+            sign:"T",
+            price: 50
+        },
+        {
+            label:"PORTAL",
+            sign:"P",
+            price: 100
+        },
+    ];
+    var edgeMaterials = [
+        {
+            label: "empty",
+            price: 0
+        },
+        {
+            label: "wall",
+            price: .25
+        },
+        {
+            label: "door",
+            price: 5
+        },
+        {
+            label: "secret door",
+            price: 70
         }
-    })();
-    
-    function resize() {
-        var h = $(window).innerHeight()-200;
-        $("#map-wrapper").css("height",h+"px");
-    }
-    
-    $(window).resize(resize);
-    
-    var mazeElementsCodes = {
-        floor: 0,
-        start: 1,
-        finish: 2,
-        trap: 3,
-        hole: 4,
-        portal: 5,
-        /*empty: 6,
-        wall: 7,*/
-        door: 8,
-        secretDoor: 9,
-    };
-    
-    var edgeCodes = {
-        empty: 0,
-        wall: 1
-    };
-    
+    ];
+    var holdedItemIndex = -1;
+    var holdedMaterialIndex = 0;
     
     /**
      * field object: {
@@ -54,116 +54,176 @@ $(document).ready(function(){
      *      topEdge:,
      *      rightEdge:,
      *      bottomEdge:,
-     *      leftEdge:,
-     *      
+     *      leftEdge:, 
      * }
      */
     
-    function assignItemToField(itemCode, field) {
-        
+    (function(){
+        //resize();
+        $("#generate-height").val("5");
+        $("#generate-width").val("5");
+        if(getCookie("maze")!==false) {
+            fields = JSON.parse(getCookie("maze"));
+            refreshBoard();
+        }
+        generateItems();
+    })();
+    
+    function updatePrice() {
+        var price = 0;
+        for(var i=0 ; i<fields.length ; ++i) {
+            for(var j=0 ; j<fields[i].length ; ++j) {
+                var field = fields[i][j];
+                price += edgeMaterials[field["rightEdge"]]["price"];
+                price += edgeMaterials[field["bottomEdge"]]["price"];
+                if(field["item"] !== false) {
+                    var itemPrice = getItemPrice(field["item"]);
+                    price = (itemPrice !== false) ? price+itemPrice : price ;
+                }
+            }
+        }
+        $("#current-cost").html(parseInt(price) + "/" + userMoney);
     }
     
-    function giveItemBack() {
-        
+    function getItemPrice(sign) {
+        for(var i=0 ; i<items.length ; ++i) {
+            var item = items[i];
+            if(item["sign"] === sign) {
+                return item["price"];
+            }
+        }
+        return false;
     }
     
     $("#generate-button").click(function(){
         var width = $("#generate-width").val();
         var height = $("#generate-height").val();
-        
-        for(var i=0 ; i<height ; ++i) {
+        fields = [];
+        for(var i=0 ; i<width ; ++i) {
             fields[fields.length] = [];
-            for(var j=0 ; j<width ; ++j) {
+            for(var j=0 ; j<height ; ++j) {
                 fields[i][fields[i].length] = {
                     col:i,
                     row:j,
-                    //topEdge:mazeElementsCodes.empty,
-                    rightEdge:edgeCodes.empty,
-                    bottomEdge:edgeCodes.empty,
-                    //leftEdge:mazeElementsCodes.empty,
+                    rightEdge:0,
+                    bottomEdge:0,
+                    item: false
                 };
-                /*if(j===0) {
-                    fields[i][j].leftEdge = edgeCodes.wall;
-                } else if(j===width-1) {
-                    fields[i][j].rightEdge = edgeCodes.wall;
-                }
-                if(i===0) {
-                    fields[i][j].topEdge = edgeCodes.wall;
-                } else if(i===height-1) {
-                    fields[i][j].bottomEdge = edgeCodes.wall;
-                }*/
             }
         }
         refreshBoard();
-        //isEdited = true;
-        $("#save").css("display","initial");
     });
     
     function generateItems() {
-        for(var item in items) {
-            var div = $(document.createElement("div"));
-            div.className = "col-xs-4 item-wrapper";
-            var btn = $(document.createElement("input"));
-            btn.attr("type","button");
-            btn.attr("value","...");
-            //...
+        $("#field-manager").empty();
+        for(var i=0 ; i<items.length ; ++i) {
+            addItemToToolbar(i);
+        }
+        for(var i=0 ; i<edgeMaterials.length ; ++i) {
+            addEdgeMaterialToToolbar(i);
         }
     }
     
+    function addEdgeMaterialToToolbar(i) {
+        var material = edgeMaterials[i];
+        var wrapper = $(document.createElement("div"));
+        wrapper.attr("id","material-"+i);
+        wrapper.attr("class","col-xs-3 material-wrapper");
+        var materialDiv = $(document.createElement("div"));
+        materialDiv.addClass("material");
+        materialDiv.html(material.label);
+        (function(i){
+            materialDiv.click(function(e){
+                $(".material-selected").removeClass("material-selected");
+                $(e.target).addClass("material-selected");
+                holdedMaterialIndex = i;
+            });
+        })(i);
+        wrapper.append(materialDiv);
+        $("#edge-manager").append(wrapper);
+    }
+    
+    function addItemToToolbar(i) {
+        var item = items[i];
+        var wrapper = $(document.createElement("div"));
+        wrapper.attr("id","item-"+i);
+        wrapper.attr("class","col-xs-3 item-wrapper");
+        var itemDiv = $(document.createElement("div"));
+        itemDiv.addClass("item");
+        itemDiv.html(item.label);
+        (function(i){
+            itemDiv.click(function(e){
+                $(".item-selected").removeClass("item-selected");
+                $(e.target).addClass("item-selected");
+                holdedItemIndex = i;
+            });
+        })(i);
+        wrapper.append(itemDiv);
+        $("#field-manager").append(wrapper);
+    }
+    
+    function removeItemFromToolbar(i) {
+        $("#item-"+i).remove();
+    }
+    
     function refreshBoard() {
+        var width = fields.length;
+        var height = fields[0].length;
         $("#map-wrapper").empty();
-        $("#map-wrapper").css("width",(fields[0].length*mazeFieldSize)+"px");
-        $("#map-wrapper").css("height",(fields.length*mazeFieldSize)+"px");
+        $("#map-wrapper").css("width",(width*mazeFieldSize)+"px");
+        $("#map-wrapper").css("height",(height*mazeFieldSize)+"px");
         $("#map-wrapper").css("display","block");
-        for(var i=0 ; i<fields.length ; ++i) {
+        for(var j=0 ; j<height ; ++j) {
             var rowDiv = $(document.createElement("div"));
             rowDiv.addClass("maze-fields-row");
-            rowDiv.css("width",(fields[i].length*mazeFieldSize)+"px");
+            rowDiv.css("width",(width*mazeFieldSize)+"px");
             rowDiv.css("height",(mazeFieldSize)+"px");
-            for(var j=0 ; j<fields[i].length ; ++j) {
+            for(var i=0 ; i<width ; ++i) {
                 var div = $(document.createElement("div"));
                 div.attr("id","maze-field-"+i+"-"+j);
                 div.addClass("maze-field");
-                
-                if(i>0) {
+                if(j>0) {
                     div.append(createWallEdit(i,j,"top"));
                 }
-                if(i<fields.length-1) {
+                if(j<height-1) {
                     div.append(createWallEdit(i,j,"bottom"));
                 }
-                if(j>0) {
+                if(i>0) {
                     div.append(createWallEdit(i,j,"left"));
                 }
-                if(j<fields[i].length-1) {
+                if(i<width-1) {
                     div.append(createWallEdit(i,j,"right"));
                 }
                 
-                //adding wall builders
-                /*
-                var topWallBuilder = $(document.createElement("div"));
-                topWallBuilder.addClass("wall-builder");
-                topWallBuilder.css("width",(mazeFieldSize/2)+"px");
-                topWallBuilder.css("height","20px");
-                topWallBuilder.click(function(){
-                    
-                });
-                div.append(topWallBuilder);*/
+                var labelDiv = $(document.createElement("div"));
+                labelDiv.addClass("item-label");
+                div.append(labelDiv);
+                if(fields[i][j]["item"] !== false) {
+                    labelDiv.html(fields[i][j]["item"]);
+                }
                 
                 //click event
                 (function(i,j){
                     div.click(function(){
-                        for(var i=0 ; i<items.length ; ++i) {
-                            
+                        if(holdedItemIndex !== -1) {
+                            fields[i][j]["item"] = items[holdedItemIndex]["sign"];
+                            $(".item-selected").removeClass("item-selected");
+                            holdedItemIndex = -1;
+                            isEdited = true;
+                        } else if(fields[i][j]["item"] !== false) {
+                            fields[i][j]["item"] = false;
+                            isEdited = true;
                         }
+                        refreshBoard();
                     });
                 })(i,j);
-                
                 setEdges(fields[i][j], div);
-                
                 rowDiv.append(div);
             }
             $("#map-wrapper").append(rowDiv);
         }
+        saveState();
+        updatePrice();
     }
     
     function createWallEdit(i,j,side) {
@@ -171,30 +231,31 @@ $(document).ready(function(){
         div.addClass("maze-field-wall-edit");
         div.addClass("maze-field-wall-edit-"+side);
         div.click(function(){
-            //isEdited = true;
+            isEdited = true;
             switch(side) {
                 case "top":
-                    fields[i-1][j].bottomEdge = (fields[i-1][j].bottomEdge===edgeCodes.empty)
-                    ? edgeCodes.wall 
-                    : edgeCodes.empty;
+                    fields[i][j-1].bottomEdge = (fields[i][j-1].bottomEdge===holdedMaterialIndex)
+                    ? 0 
+                    : holdedMaterialIndex;
                     break;
                 case "right":
-                    fields[i][j].rightEdge = (fields[i][j].rightEdge===edgeCodes.empty)
-                    ? edgeCodes.wall 
-                    : edgeCodes.empty;
+                    fields[i][j].rightEdge = (fields[i][j].rightEdge===holdedMaterialIndex)
+                    ? 0
+                    : holdedMaterialIndex;
                     break;
                 case "bottom":
-                    fields[i][j].bottomEdge = (fields[i][j].bottomEdge===edgeCodes.empty)
-                    ? edgeCodes.wall 
-                    : edgeCodes.empty;
+                    fields[i][j].bottomEdge = (fields[i][j].bottomEdge===holdedMaterialIndex)
+                    ? 0
+                    : holdedMaterialIndex;
                     break;
                 case "left":
-                    fields[i][j-1].rightEdge = (fields[i][j-1].rightEdge===edgeCodes.empty)
-                    ? edgeCodes.wall 
-                    : edgeCodes.empty;
+                    fields[i-1][j].rightEdge = (fields[i-1][j].rightEdge===holdedMaterialIndex)
+                    ? 0
+                    : holdedMaterialIndex;
                     break;
             }
             refreshBoard();
+            saveState();
         });
         return div;
     }
@@ -206,61 +267,20 @@ $(document).ready(function(){
         };
         for(var i in edges) {
             switch(element[i]) {
-                case edgeCodes.empty:
+                case 0://empty
                     break;
-                case edgeCodes.wall:
+                case 1://wall
                     div.css("border-"+edges[i],"solid 3px #000");
                     break;
-                //case: ...
+                case 2://door
+                    div.css("border-"+edges[i],"solid 3px #630");
+                    break;
+                case 3://secret door
+                    div.css("border-"+edges[i],"dotted 3px #630");
+                    break;
             }
         }
     }
-    /*
-    function clickField(i,j) {
-        //edges options
-        $(".edge-switch").empty();
-        if(j>0) {
-            //add select left edge
-            $("#edge-switch-left").append(generateEdgeSelect(i,j,"leftEdge"));
-        } else {
-            //unchangable value
-            $("#edge-switch-left").append(getKey(mazeElementsCodes,fields[i][j].leftEdge));
-        }
-        if(j<fields[0].length-1) {
-            //add select right edge
-            $("#edge-switch-right").append(generateEdgeSelect(i,j,"rightEdge"));
-        } else {
-            //unchangable value
-            $("#edge-switch-right").append(getKey(mazeElementsCodes,fields[i][j].rightEdge));
-        }
-        if(i>0) {
-            //add select top edge
-            $("#edge-switch-top").append(generateEdgeSelect(i,j,"topEdge"));
-        } else {
-            $("#edge-switch-top").append(getKey(mazeElementsCodes,fields[i][j].topEdge));
-            //unchangable value
-        }
-        if(i<fields.length-1) {
-            //add select bottom edge
-            $("#edge-switch-bottom").append(generateEdgeSelect(i,j,"bottomEdge"));
-        } else {
-            //unchangable value
-            $("#edge-switch-bottom").append(getKey(mazeElementsCodes,fields[i][j].bottomEdge));
-        }
-        $("#field-manager-wrapper").css("opacity",1);
-    }
-    /*
-    function generateEdgeSelect(i,j,flag) {
-        var select = $(document.createElement("select"));
-        select.append("<option value='"+ mazeElementsCodes.empty +"'>empty</option>");
-        select.append("<option value='"+ mazeElementsCodes.wall +"'>wall</option>");
-        select.change(function(){
-            fields[i][j][flag] = parseInt($(this).val());
-            refreshBoard();
-        });
-        return select;
-    }
-    */
     function getKey(obj, value) {
         for(var i in obj) {
             if(obj[i]===value) {
@@ -269,26 +289,42 @@ $(document).ready(function(){
         }
         return false;
     }
-    /*
-    function saveBeforeLeave() {
-        if(!isEdited) {
+    
+    var savingEnabled = true;
+    function saveState() {
+        if(!savingEnabled) {
             return;
         }
-        if(confirm("Do You want to save changes?")) {
-            $("#save").click();
-        }
-        $("#map-wrapper").empty();
-        fields = [];
-    }
-    */
-    $("#save").click(function(){
+        displaySave();
         setCookie("maze",JSON.stringify(fields));
-    });
+        isEdited = false;
+        savingEnabled = false;
+        setTimeout(function(){
+            savingEnabled = true;
+            if(isEdited) {
+                saveState();
+            }
+        },3000);
+    }
     
-    $("#load").click(function(){
-        fields = JSON.parse(getCookie("maze"));
-        refreshBoard();
-        $("#save").css("display","initial");
+    function displaySave() {
+        $("#maze-saved").css("opacity",.5);
+        setTimeout(function(){
+            $("#maze-saved").css("opacity",0);
+        },700);
+    }
+   
+    $("#upload").click(function(){
+        $.ajax({
+            url: "checkMaze",
+            type: "POST",
+            data: {
+                maze: JSON.stringify(fields)
+            },
+            success: function(result) {
+                console.log(result);
+            }
+        });
     });
     
     function setCookie(name, value) {
