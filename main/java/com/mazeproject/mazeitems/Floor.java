@@ -10,7 +10,7 @@ public class Floor implements MazeItem {
     }
     
     @Override
-    public double getPrice() {
+    public int getCode() {
         return 0;
     }
     

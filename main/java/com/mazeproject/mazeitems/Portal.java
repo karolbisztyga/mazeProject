@@ -10,8 +10,8 @@ public class Portal implements MazeItem {
     }
     
     @Override
-    public double getPrice() {
-        return 0;
+    public int getCode() {
+        return 5;
     }
     
 }

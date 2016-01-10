@@ -1,7 +1,18 @@
 package com.mazeproject.objects;
 
-import com.mazeproject.exceptions.WrongMazeFormat;
+import com.mazeproject.exceptions.WrongMazeFormatException;
 import com.mazeproject.mazeitems.MazeItemFactory;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -15,7 +26,6 @@ public class Maze {
     public Maze(int width, int height) {
         this.width = width;
         this.height = height;
-        System.out.println("new maze width=" + width + ", height=" + height);
         
         this.elements = new MazeElement[width][height];
         for(int i=0 ; i<width ; ++i) {
@@ -26,7 +36,11 @@ public class Maze {
     }
     
     public MazeElement getElement(int row, int col) {
-        return this.elements[col][row];
+        try {
+            return this.elements[col][row];
+        } catch(ArrayIndexOutOfBoundsException e) {
+            return null;
+        }
     }
     
     public void setElement(int row, int col, MazeElement el) {
@@ -45,24 +59,24 @@ public class Maze {
         return "";
     }
     
-    public static Maze decode(String data) throws WrongMazeFormat {
+    public static Maze decode(String data) throws WrongMazeFormatException {
         boolean startExists = false;
         boolean finishExists = false;
-        double price = 0;
+        //double price = 0;
         Maze maze = null;
         int width = 0;
         int height = 0;
         JSONArray outerArray = new JSONArray(data);
         width = outerArray.length();
         if(width < 5 || width > 100) {
-            throw new WrongMazeFormat("Maze width is not between 5 and 100");
+            throw new WrongMazeFormatException("Maze width is not between 5 and 100");
         }
         for(int i=0 ; i<outerArray.length() ; ++i) {
             JSONArray innerArray = new JSONArray(outerArray.get(i).toString());
             if(i==0) {
                 height = innerArray.length();
                 if(height < 5 || height > 100) {
-                    throw new WrongMazeFormat("Maze height is not between 5 and 100");
+                    throw new WrongMazeFormatException("Maze height is not between 5 and 100");
                 }
                 maze = new Maze(width, height);
             }
@@ -99,12 +113,58 @@ public class Maze {
                 }
                 int right = (int)ob.get("rightEdge");
                 int bottom = (int)ob.get("bottomEdge");
-                System.out.println("r:"+row+",c:"+col+",item:"+
-                        itemCode+",riht:"+right+",bottom:"+bottom);
-                maze.setElement(row, col, new MazeElement(item, right, bottom));
+                /*price = price
+                        +PriceManager.getInstance().getEdgePrice(right)
+                        +PriceManager.getInstance().getEdgePrice(bottom)
+                        +PriceManager.getInstance().getItemPrice(item.getCode());
+                /*System.out.println("r:"+row+",c:"+col+",item:"+
+                        itemCode+",riht:"+right+",bottom:"+bottom);*/
+                maze.setElement(row, col, new MazeElement(item, row, col, right, bottom));
             }
         }
+        if(!startExists) {
+            throw new WrongMazeFormatException("Maze has to contain at least one start item");
+        }
+        if(!finishExists) {
+            throw new WrongMazeFormatException("Maze has to contain at least one finish item");
+        }
         return maze;
+    }
+    
+    /**
+     * @param maze
+     * @return if Maze is possible to complete
+     * @throws com.mazeproject.exceptions.WrongMazeFormatException
+     */
+    public static boolean goThroughMaze(Maze maze) 
+            throws WrongMazeFormatException, InterruptedException, ExecutionException {
+        List<MazeElement> startPoints = new ArrayList<>();
+        for(int i=0 ; i<maze.getWidth() ; ++i) {
+            for(int j=0 ; j<maze.getHeight() ; ++j) {
+                MazeElement el = maze.getElement(j, i);
+                if(el.getItem().getCode() == 1) {
+                    startPoints.add(el);
+                }
+            }
+        }
+        if(startPoints.isEmpty()) {
+            throw new WrongMazeFormatException("Maze has to contain at least one start item");
+        }
+        ExecutorService executor = Executors.newCachedThreadPool();
+        ArrayDeque<MazeCrawler> crawlers = new ArrayDeque<>();
+        List<Future<Boolean>> results = new ArrayList<>();
+        for(MazeElement el : startPoints) {
+            MazeCrawler crawler = new MazeCrawler(maze, el, executor);
+            crawlers.add(crawler);
+        }
+        results = executor.invokeAll(crawlers);
+        executor.shutdown();
+        for(Future<Boolean> result : results) {
+            if(result.get()) {
+                return true;
+            }
+        }
+        return false;
     }
     
 }

@@ -1,15 +1,13 @@
 package com.mazeproject.servlets.ajax;
 
-import com.mazeproject.exceptions.WrongMazeFormat;
+import com.mazeproject.exceptions.ImpossibleMazeException;
+import com.mazeproject.exceptions.WrongMazeFormatException;
 import com.mazeproject.objects.Maze;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import jdk.nashorn.internal.parser.JSONParser;
 import org.json.JSONObject;
 
 public class CheckMaze extends HttpServlet {
@@ -41,12 +39,27 @@ public class CheckMaze extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         JSONObject ob = new JSONObject();
-        try {
-            Maze.decode(request.getParameter("maze"));
-        } catch (WrongMazeFormat ex) {
-            ex.printStackTrace();
-        }
         response.setContentType("application/json");
+        try {
+            Maze maze = Maze.decode(request.getParameter("maze"));
+            if(!Maze.goThroughMaze(maze)) {
+                throw new ImpossibleMazeException("Maze seems to be impossible");
+            }
+            
+            //check price with user in database and if all ok save maze in db...
+        } catch (WrongMazeFormatException | ImpossibleMazeException e) {
+            ob.put("type", "error");
+            ob.put("message", e.getMessage());
+            response.getWriter().print(ob.toString());
+            return;
+        } catch(InterruptedException e) {
+            ob.put("type", "error");
+            ob.put("message", "Could not check the maze, probably it is too complex");
+            response.getWriter().print(ob.toString());
+            return;
+        }
+        ob.put("type", "success");
+        ob.put("message", "maze ok");
         response.getWriter().print(ob.toString());
     }
 }
