@@ -3,7 +3,9 @@ package com.mazeproject.servlets.ajax;
 import com.mazeproject.exceptions.ImpossibleMazeException;
 import com.mazeproject.exceptions.WrongMazeFormatException;
 import com.mazeproject.objects.Maze;
+import com.mazeproject.servlets.support.Security;
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -45,14 +47,16 @@ public class CheckMaze extends HttpServlet {
             if(!Maze.goThroughMaze(maze)) {
                 throw new ImpossibleMazeException("Maze seems to be impossible");
             }
-            
+            if(!Security.login(request.getSession())) {
+                throw new SecurityException("You are not logged in");
+            }
             //check price with user in database and if all ok save maze in db...
-        } catch (WrongMazeFormatException | ImpossibleMazeException e) {
+        } catch (WrongMazeFormatException | ImpossibleMazeException | SecurityException e) {
             ob.put("type", "error");
             ob.put("message", e.getMessage());
             response.getWriter().print(ob.toString());
             return;
-        } catch(InterruptedException e) {
+        } catch(InterruptedException | ExecutionException e) {
             ob.put("type", "error");
             ob.put("message", "Could not check the maze, probably it is too complex");
             response.getWriter().print(ob.toString());

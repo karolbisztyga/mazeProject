@@ -24,7 +24,7 @@ $(document).ready(function(){
             label:"PORTAL",
             sign:"P",
             price: 100
-        },
+        }
     ];
     var edgeMaterials = [
         {
@@ -64,7 +64,9 @@ $(document).ready(function(){
         $("#generate-width").val("5");
         if(getCookie("maze")!==false) {
             fields = JSON.parse(getCookie("maze"));
-            refreshBoard();
+            drawBoard();
+            saveState();
+            updatePrice();
         }
         generateItems();
     })();
@@ -111,7 +113,7 @@ $(document).ready(function(){
                 };
             }
         }
-        refreshBoard();
+        drawBoard();
     });
     
     function generateItems() {
@@ -162,11 +164,7 @@ $(document).ready(function(){
         $("#field-manager").append(wrapper);
     }
     
-    function removeItemFromToolbar(i) {
-        $("#item-"+i).remove();
-    }
-    
-    function refreshBoard() {
+    function drawBoard() {
         var width = fields.length;
         var height = fields[0].length;
         $("#map-wrapper").empty();
@@ -197,24 +195,23 @@ $(document).ready(function(){
                 
                 var labelDiv = $(document.createElement("div"));
                 labelDiv.addClass("item-label");
+                labelDiv.attr("id","item-label-"+i+"-"+j);
                 div.append(labelDiv);
-                if(fields[i][j]["item"] !== false) {
-                    labelDiv.html(fields[i][j]["item"]);
-                }
                 
                 //click event
                 (function(i,j){
                     div.click(function(){
                         if(holdedItemIndex !== -1) {
                             fields[i][j]["item"] = items[holdedItemIndex]["sign"];
+                            $("#item-label-"+i+"-"+j).html(fields[i][j]["item"]);
                             $(".item-selected").removeClass("item-selected");
                             holdedItemIndex = -1;
                             isEdited = true;
                         } else if(fields[i][j]["item"] !== false) {
                             fields[i][j]["item"] = false;
+                            $("#item-label-"+i+"-"+j).html("");
                             isEdited = true;
                         }
-                        refreshBoard();
                     });
                 })(i,j);
                 setEdges(fields[i][j], div);
@@ -222,8 +219,6 @@ $(document).ready(function(){
             }
             $("#map-wrapper").append(rowDiv);
         }
-        saveState();
-        updatePrice();
     }
     
     function createWallEdit(i,j,side) {
@@ -232,29 +227,43 @@ $(document).ready(function(){
         div.addClass("maze-field-wall-edit-"+side);
         div.click(function(){
             isEdited = true;
+            var styles =[
+                "3px solid rgba(0,0,0,.1)",
+                "solid 3px #000",
+                "solid 3px #630",
+                "dotted 3px #630"
+            ];
             switch(side) {
                 case "top":
                     fields[i][j-1].bottomEdge = (fields[i][j-1].bottomEdge===holdedMaterialIndex)
                     ? 0 
                     : holdedMaterialIndex;
+                    $("#maze-field-"+i+"-"+(j-1))
+                            .css("border-bottom",styles[fields[i][j-1].bottomEdge]);
                     break;
                 case "right":
                     fields[i][j].rightEdge = (fields[i][j].rightEdge===holdedMaterialIndex)
                     ? 0
                     : holdedMaterialIndex;
+                    $("#maze-field-"+i+"-"+j)
+                            .css("border-right",styles(fields[i][j].rightEdge));
                     break;
                 case "bottom":
                     fields[i][j].bottomEdge = (fields[i][j].bottomEdge===holdedMaterialIndex)
                     ? 0
                     : holdedMaterialIndex;
+                    $("#maze-field-"+i+"-"+j)
+                            .css("border-bottom",styles[fields[i][j].bottomEdge]);
                     break;
                 case "left":
                     fields[i-1][j].rightEdge = (fields[i-1][j].rightEdge===holdedMaterialIndex)
                     ? 0
                     : holdedMaterialIndex;
+                    $("#maze-field-"+(i-1)+"-"+j)
+                            .css("border-right",styles[fields[i-1][j].rightEdge]);
                     break;
             }
-            refreshBoard();
+            updatePrice();
             saveState();
         });
         return div;
@@ -280,14 +289,6 @@ $(document).ready(function(){
                     break;
             }
         }
-    }
-    function getKey(obj, value) {
-        for(var i in obj) {
-            if(obj[i]===value) {
-                return i;
-            }
-        }
-        return false;
     }
     
     var savingEnabled = true;
