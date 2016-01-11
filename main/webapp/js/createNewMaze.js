@@ -49,12 +49,11 @@ $(document).ready(function(){
     
     /**
      * field object: {
-     *      col:,
-     *      row:,
-     *      topEdge:,
-     *      rightEdge:,
-     *      bottomEdge:,
-     *      leftEdge:, 
+     *      r:,
+     *      c:,
+     *      re:,
+     *      be:,
+     *      i:,
      * }
      */
     
@@ -76,10 +75,10 @@ $(document).ready(function(){
         for(var i=0 ; i<fields.length ; ++i) {
             for(var j=0 ; j<fields[i].length ; ++j) {
                 var field = fields[i][j];
-                price += edgeMaterials[field["rightEdge"]]["price"];
-                price += edgeMaterials[field["bottomEdge"]]["price"];
-                if(field["item"] !== false) {
-                    var itemPrice = getItemPrice(field["item"]);
+                price += edgeMaterials[field["re"]]["price"];
+                price += edgeMaterials[field["be"]]["price"];
+                if(field["i"] !== 'f') {
+                    var itemPrice = getItemPrice(field["i"]);
                     price = (itemPrice !== false) ? price+itemPrice : price ;
                 }
             }
@@ -105,11 +104,11 @@ $(document).ready(function(){
             fields[fields.length] = [];
             for(var j=0 ; j<height ; ++j) {
                 fields[i][fields[i].length] = {
-                    col:i,
-                    row:j,
-                    rightEdge:0,
-                    bottomEdge:0,
-                    item: false
+                    c:i,
+                    r:j,
+                    re:0,
+                    be:0,
+                    i: 'f'
                 };
             }
         }
@@ -196,22 +195,27 @@ $(document).ready(function(){
                 var labelDiv = $(document.createElement("div"));
                 labelDiv.addClass("item-label");
                 labelDiv.attr("id","item-label-"+i+"-"+j);
+                if(fields[i][j]["i"] !== 'f') {
+                    labelDiv.html(fields[i][j]["i"]);
+                }
                 div.append(labelDiv);
                 
                 //click event
                 (function(i,j){
                     div.click(function(){
                         if(holdedItemIndex !== -1) {
-                            fields[i][j]["item"] = items[holdedItemIndex]["sign"];
-                            $("#item-label-"+i+"-"+j).html(fields[i][j]["item"]);
+                            fields[i][j]["i"] = items[holdedItemIndex]["sign"];
+                            $("#item-label-"+i+"-"+j).html(fields[i][j]["i"]);
                             $(".item-selected").removeClass("item-selected");
                             holdedItemIndex = -1;
                             isEdited = true;
-                        } else if(fields[i][j]["item"] !== false) {
-                            fields[i][j]["item"] = false;
+                        } else if(fields[i][j]["i"] !== 'f') {
+                            fields[i][j]["i"] = 'f';
                             $("#item-label-"+i+"-"+j).html("");
                             isEdited = true;
                         }
+                        saveState();
+                        updatePrice();
                     });
                 })(i,j);
                 setEdges(fields[i][j], div);
@@ -235,32 +239,32 @@ $(document).ready(function(){
             ];
             switch(side) {
                 case "top":
-                    fields[i][j-1].bottomEdge = (fields[i][j-1].bottomEdge===holdedMaterialIndex)
+                    fields[i][j-1].be = (fields[i][j-1].be===holdedMaterialIndex)
                     ? 0 
                     : holdedMaterialIndex;
                     $("#maze-field-"+i+"-"+(j-1))
-                            .css("border-bottom",styles[fields[i][j-1].bottomEdge]);
+                            .css("border-bottom",styles[fields[i][j-1].be]);
                     break;
                 case "right":
-                    fields[i][j].rightEdge = (fields[i][j].rightEdge===holdedMaterialIndex)
+                    fields[i][j].re = (fields[i][j].re===holdedMaterialIndex)
                     ? 0
                     : holdedMaterialIndex;
                     $("#maze-field-"+i+"-"+j)
-                            .css("border-right",styles(fields[i][j].rightEdge));
+                            .css("border-right",styles[fields[i][j].re]);
                     break;
                 case "bottom":
-                    fields[i][j].bottomEdge = (fields[i][j].bottomEdge===holdedMaterialIndex)
+                    fields[i][j].be = (fields[i][j].be===holdedMaterialIndex)
                     ? 0
                     : holdedMaterialIndex;
                     $("#maze-field-"+i+"-"+j)
-                            .css("border-bottom",styles[fields[i][j].bottomEdge]);
+                            .css("border-bottom",styles[fields[i][j].be]);
                     break;
                 case "left":
-                    fields[i-1][j].rightEdge = (fields[i-1][j].rightEdge===holdedMaterialIndex)
+                    fields[i-1][j].re = (fields[i-1][j].re===holdedMaterialIndex)
                     ? 0
                     : holdedMaterialIndex;
                     $("#maze-field-"+(i-1)+"-"+j)
-                            .css("border-right",styles[fields[i-1][j].rightEdge]);
+                            .css("border-right",styles[fields[i-1][j].re]);
                     break;
             }
             updatePrice();
@@ -271,8 +275,8 @@ $(document).ready(function(){
     
     function setEdges(element, div) {
         var edges = {
-            rightEdge: "right",
-            bottomEdge: "bottom"
+            re: "right",
+            be: "bottom"
         };
         for(var i in edges) {
             switch(element[i]) {
@@ -323,6 +327,7 @@ $(document).ready(function(){
                 maze: JSON.stringify(fields)
             },
             success: function(result) {
+                console.log(JSON.stringify(fields));
                 console.log(result);
             }
         });

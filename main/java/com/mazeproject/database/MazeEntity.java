@@ -6,7 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import org.joda.time.DateTime;
+import org.hibernate.annotations.Type;
 
 @Entity
 @Table(name="maze")
@@ -17,11 +17,13 @@ public class MazeEntity implements Serializable {
     @Column(name="id")
     private int id;
     
-    @Column(name="code")
+    @Column(name="code", nullable = false)
+    @Type(type="text")
     private String code;
     
-    @Column(name="createdDate")
-    private DateTime createdDate;
+    @Column(name="createdDate", nullable = false)
+    @Type(type="long")
+    private long createdDate;
 
     public int getId() {
         return id;
@@ -35,14 +37,11 @@ public class MazeEntity implements Serializable {
         this.code = code;
     }
 
-    public DateTime getCreatedDate() {
+    public long getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(DateTime createdDate) {
+    public void setCreatedDate(long createdDate) {
         this.createdDate = createdDate;
     }
-    
-    
-    
 }

@@ -1,18 +1,14 @@
 package com.mazeproject.objects;
 
 import com.mazeproject.exceptions.WrongMazeFormatException;
-import com.mazeproject.mazeitems.MazeItemFactory;
+import com.mazeproject.mazeitems.MazeItemManager;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -20,6 +16,7 @@ public class Maze {
     
     private final int width;
     private final int height;
+    private int price = 0;
 
     private final MazeElement [][]elements;
     
@@ -56,13 +53,28 @@ public class Maze {
     }
     
     public String encode() {
-        return "";
+        JSONArray outerArray = new JSONArray();
+        for(int i=0 ; i<width ; ++i) {
+            JSONArray innerArray = new JSONArray();
+            for(int j=0 ; j<height ; ++j) {
+                JSONObject ob = new JSONObject();
+                MazeElement element = this.getElement(j, i);
+                ob.put("r", j);
+                ob.put("c", i);
+                ob.put("re", element.getRight());
+                ob.put("be", element.getBottom());
+                ob.put("i", MazeItemManager.getSignByClass(element.getItem().getClass()));
+                innerArray.put(ob);
+            }
+            outerArray.put(innerArray);
+        }
+        return outerArray.toString();
     }
     
     public static Maze decode(String data) throws WrongMazeFormatException {
         boolean startExists = false;
         boolean finishExists = false;
-        //double price = 0;
+        double price = 0;
         Maze maze = null;
         int width = 0;
         int height = 0;
@@ -71,7 +83,7 @@ public class Maze {
         if(width < 5 || width > 100) {
             throw new WrongMazeFormatException("Maze width is not between 5 and 100");
         }
-        for(int i=0 ; i<outerArray.length() ; ++i) {
+        for(int i=0 ; i<width ; ++i) {
             JSONArray innerArray = new JSONArray(outerArray.get(i).toString());
             if(i==0) {
                 height = innerArray.length();
@@ -80,45 +92,21 @@ public class Maze {
                 }
                 maze = new Maze(width, height);
             }
-            for(int j=0 ; j<innerArray.length() ; ++j) {
+            for(int j=0 ; j<height ; ++j) {
                 JSONObject ob = new JSONObject(innerArray.get(j).toString());
-                //System.out.println(ob.toString());
-                int row = (int)ob.get("row");
-                int col = (int)ob.get("col");
-                String itemCode = ob.get("item").toString();
-                MazeItem item = null;
-                switch(itemCode) {
-                    case "false": {
-                        item = MazeItemFactory.getFloor();
-                        break;
-                    }
-                    case "S": {
-                        item = MazeItemFactory.getStart();
-                        startExists = true;
-                        break;
-                    }
-                    case "F": {
-                        item = MazeItemFactory.getFinish();
-                        finishExists = true;
-                        break;
-                    }
-                    case "T": {
-                        //...
-                        break;
-                    }
-                    case "P": {
-                        //...
-                        break;
-                    }
-                }
-                int right = (int)ob.get("rightEdge");
-                int bottom = (int)ob.get("bottomEdge");
-                /*price = price
+                int row = (int)ob.get("r");
+                int col = (int)ob.get("c");
+                int right = (int)ob.get("re");
+                int bottom = (int)ob.get("be");
+                String itemCode = ob.get("i").toString();
+                itemCode = itemCode.substring(0, 1);
+                MazeItem item = MazeItemManager.getItem(itemCode);
+                if(itemCode.equals("S")) startExists = true;
+                else if(itemCode.equals("F")) finishExists = true;
+                price = price
                         +PriceManager.getInstance().getEdgePrice(right)
                         +PriceManager.getInstance().getEdgePrice(bottom)
                         +PriceManager.getInstance().getItemPrice(item.getCode());
-                /*System.out.println("r:"+row+",c:"+col+",item:"+
-                        itemCode+",riht:"+right+",bottom:"+bottom);*/
                 maze.setElement(row, col, new MazeElement(item, row, col, right, bottom));
             }
         }
@@ -128,6 +116,7 @@ public class Maze {
         if(!finishExists) {
             throw new WrongMazeFormatException("Maze has to contain at least one finish item");
         }
+        maze.setPrice((int)price);
         return maze;
     }
     
@@ -165,6 +154,27 @@ public class Maze {
             }
         }
         return false;
+    }
+    
+    public void setPrice(int price) {
+        this.price = price;
+    }
+    
+    public int getPrice(boolean update) {
+        if(update) {
+            double price = 0;
+            for(int i=0 ; i<width ; ++i) {
+                for(int j=0 ; j<height ; ++j) {
+                    MazeElement element = this.getElement(j, i);
+                    price += PriceManager.getInstance().getItemPrice(element.getItem().getCode());
+                    price += PriceManager.getInstance().getEdgePrice(element.getRight());
+                    price += PriceManager.getInstance().getEdgePrice(element.getBottom());
+                }
+            }
+            this.price = (int)price;
+            return this.price;
+        }
+        return this.price;
     }
     
 }
