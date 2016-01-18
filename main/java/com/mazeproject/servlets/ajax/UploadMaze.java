@@ -22,7 +22,7 @@ import org.hibernate.Transaction;
 import org.hibernate.cfg.AnnotationConfiguration;
 import org.json.JSONObject;
 
-public class CheckMaze extends HttpServlet {
+public class UploadMaze extends HttpServlet {
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -73,7 +73,8 @@ public class CheckMaze extends HttpServlet {
             databaseSession = sessionFactory.openSession();
             transaction = databaseSession.beginTransaction();
             //checking user's money
-            String userName = ((UserSessionStorage)session.getAttribute("loginData")).getName();
+            String userName = ((UserSessionStorage)session.getAttribute("loginData"))
+                    .getUserEntity().getName();
             String query = "FROM UserEntity u WHERE name=:name";
             UserEntity user = (UserEntity)databaseSession.createQuery(query)
                     .setParameter("name", userName).uniqueResult();
@@ -84,9 +85,14 @@ public class CheckMaze extends HttpServlet {
             user.setMoney(money-price);
             databaseSession.update(user);
             //saving maze
+            long createdDate = System.currentTimeMillis();
             MazeEntity mazeEntity = new MazeEntity();
             mazeEntity.setCode(maze.encode());
-            mazeEntity.setCreatedDate(System.currentTimeMillis());
+            mazeEntity.setAuthor(user);
+            mazeEntity.setCreatedDate(createdDate);
+            mazeEntity.setDisplayId(
+                    UserSessionStorage.getInstance().getUserEntity().getId() + "" + 
+                    createdDate);
             int id = (Integer)databaseSession.save(mazeEntity);
             transaction.commit();
             
@@ -105,6 +111,8 @@ public class CheckMaze extends HttpServlet {
             return;
         } catch(HibernateException e) {
             e.printStackTrace();
+            ob.put("type", "error");
+            ob.put("message", "Sorry, database error occured. Please, contact the administrator.");
             if(transaction!=null) {
                 transaction.rollback();
             }

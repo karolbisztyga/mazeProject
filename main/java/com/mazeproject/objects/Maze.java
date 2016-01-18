@@ -143,17 +143,17 @@ public class Maze {
         ArrayDeque<MazeCrawler> crawlers = new ArrayDeque<>();
         List<Future<Boolean>> results = new ArrayList<>();
         for(MazeElement el : startPoints) {
-            MazeCrawler crawler = new MazeCrawler(maze, el, executor);
+            MazeCrawler crawler = new MazeCrawler(maze, el);
             crawlers.add(crawler);
         }
         results = executor.invokeAll(crawlers);
         executor.shutdown();
         for(Future<Boolean> result : results) {
-            if(result.get()) {
-                return true;
+            if(!result.get()) {
+                return false;
             }
         }
-        return false;
+        return true;
     }
     
     public void setPrice(int price) {

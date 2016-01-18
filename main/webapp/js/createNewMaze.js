@@ -3,7 +3,7 @@ $(document).ready(function(){
     var isEdited = false;
     var mazeFieldSize = 100;
     var fields = [];
-    var userMoney = 100;
+    var userMoney = false;
     var items = [
         {
             label:"START",
@@ -83,7 +83,7 @@ $(document).ready(function(){
                 }
             }
         }
-        $("#current-cost").html(parseInt(price) + "/" + userMoney);
+        $("#current-cost").html(parseInt(price) + "/unknown");
     }
     
     function getItemPrice(sign) {
@@ -321,14 +321,19 @@ $(document).ready(function(){
    
     $("#upload").click(function(){
         $.ajax({
-            url: "checkMaze",
+            url: "uploadMaze",
             type: "POST",
             data: {
                 maze: JSON.stringify(fields)
             },
             success: function(result) {
-                console.log(JSON.stringify(fields));
-                console.log(result);
+                //console.log(JSON.stringify(fields));
+                if(result["type"]==='success') {
+                    document.cookie = "maze=;";
+                    window.location = "myMazes";
+                } else {
+                    alert(result["type"] + ": " + result["message"]);
+                }
             }
         });
     });

@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.Stack;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
 
 public class MazeCrawler implements Callable<Boolean> {
     
@@ -20,12 +19,10 @@ public class MazeCrawler implements Callable<Boolean> {
     private final Maze maze;
     private final MazeElement startElement;
     private boolean finished = false;
-    private final ExecutorService executor;
     
-    public MazeCrawler(Maze maze, MazeElement startElement, ExecutorService executor) {
+    public MazeCrawler(Maze maze, MazeElement startElement) {
         this.maze = maze;
         this.startElement = startElement;
-        this.executor = executor;
     }
 
 
@@ -49,7 +46,7 @@ public class MazeCrawler implements Callable<Boolean> {
         visitedEleemnts.add(currentElement);
         if(currentElement.getItem().getCode()==2) {
             this.finished = true;
-            this.executor.shutdownNow();
+            Thread.currentThread().interrupt();
         }
         MazeElement elementUp =
                 this.maze.getElement(currentElement.getRow()-1,currentElement.getCol());

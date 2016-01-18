@@ -1,9 +1,4 @@
 $(document).ready(function(){
-    /*for(var i=0,as=$("a") ; i<as.length ; ++i) {
-        var href = $(as[i]).attr("href");
-        var delimiter = (href.indexOf("?")!==-1)?"&":"?";
-        //$(as[i]).attr("href", href+delimiter+"cache="+Math.floor(Math.random()*10000000000000));
-    }*/
     
     $.ajax({
         url: "getUserData",
@@ -18,7 +13,6 @@ $(document).ready(function(){
             var logInLink = $(document.createElement("a"));
             var href = (loggedIn) ? "logout" : "login" ;
             logInLink.attr("href",href);
-            //logInLink.attr("class","glyphicon glyphicon-off");
             logInLink.addClass("glyphicon");
             if(loggedIn) {
                 logInLink.addClass("glyphicon-off");
@@ -27,6 +21,12 @@ $(document).ready(function(){
             }
             logInLink.attr("id","login-div");
             $(document.body).append(logInLink);
+            if(loggedIn) {
+                var dataDiv = $(document.createElement("div"));
+                dataDiv.attr("id","data-div");
+                dataDiv.html("Hello <i>" + result['name'] + "</i>[" + result['money']+"$]");
+                $(document.body).append(dataDiv);
+            }
         }
     });
     

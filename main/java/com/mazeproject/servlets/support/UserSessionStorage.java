@@ -1,71 +1,41 @@
 package com.mazeproject.servlets.support;
 
+import com.mazeproject.database.UserEntity;
+
 public class UserSessionStorage {
     
-    private String name;
-    private String password;
+    private UserEntity userEntity;
     private static ThreadLocal<UserSessionStorage> instance;
 
-    private UserSessionStorage(String name, String password) {
-        this.name = name;
-        this.password = password;
+    public UserSessionStorage(UserEntity userEntity) {
+        this.userEntity = userEntity;
     }
 
-    public String getName() {
-        return name;
+    public UserEntity getUserEntity() {
+        return userEntity;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
+    public void setUserEntity(UserEntity userEntity) {
+        this.userEntity = userEntity;
     }
     
     public static UserSessionStorage getInstance() {
-        return UserSessionStorage.getInstance(null, null);
+        return UserSessionStorage.getInstance(null);
     }
     
-    public static UserSessionStorage getInstance(String name, String password) {
+    public static UserSessionStorage getInstance(UserEntity userEntity) {
         if(UserSessionStorage.instance==null) {
             UserSessionStorage.instance = new ThreadLocal(){
                 @Override
                 public UserSessionStorage initialValue() {
-                    return new UserSessionStorage(null, null);
+                    return new UserSessionStorage(null);
                 }
             };
         }
-        if(name != null) {
-            UserSessionStorage.instance.get().setName(name);
-        }
-        if(password != null) {
-            UserSessionStorage.instance.get().setPassword(password);
+        if(userEntity != null) {
+            UserSessionStorage.instance.get().setUserEntity(userEntity);
         }
         return UserSessionStorage.instance.get();
     }
-    
-    /*
-    public String getSerializedValue(HttpSession s) {
-        ObjectOutputStream oo = null;
-        try {
-            OutputStream os = s.get
-            oo = new ObjectOutputStream;
-            oo.writeObject(serOut);
-        } catch (IOException ex) {
-            Logger.getLogger(UserSessionStorage.class.getName()).log(Level.SEVERE, null, ex);
-        } finally {
-            try {
-                oo.close();
-            } catch (IOException ex) {
-                Logger.getLogger(UserSessionStorage.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-    }
-    */
     
 }

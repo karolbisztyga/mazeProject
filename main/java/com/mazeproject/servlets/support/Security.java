@@ -33,7 +33,10 @@ public class Security {
                     .list();
             transaction.commit();
             if(result.size()==1) {
-                session.setAttribute("loginData", UserSessionStorage.getInstance(name, password));
+                Integer money = ((UserEntity)result.get(0)).getMoney();
+                session.setAttribute(
+                        "loginData", 
+                        UserSessionStorage.getInstance(new UserEntity(name, password, money)));
                 return true;
             } else {
                 session.removeAttribute("loginData");
@@ -55,8 +58,8 @@ public class Security {
     public static boolean login(HttpSession session) {
         try {
             UserSessionStorage uss = (UserSessionStorage)session.getAttribute("loginData");
-            String name = uss.getName();
-            String password = uss.getPassword();
+            String name = uss.getUserEntity().getName();
+            String password = uss.getUserEntity().getPassword();
             return Security.login(name, password, session);
         } catch(NullPointerException e) {
             return false;
@@ -65,8 +68,7 @@ public class Security {
     
     public static void logout(HttpSession session) {
         session.removeAttribute("loginData");
-        UserSessionStorage.getInstance().setName(null);
-        UserSessionStorage.getInstance().setPassword(null);
+        UserSessionStorage.getInstance().setUserEntity(null);
     }
     
 }

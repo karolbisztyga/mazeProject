@@ -1,5 +1,7 @@
 $(document).ready(function(){
     
+    $("#name-field").focus();
+    
     $("#login-button").click(function(e){
         e.preventDefault();
         var fields = ["name","password"];

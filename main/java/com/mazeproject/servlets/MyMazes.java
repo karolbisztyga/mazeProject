@@ -1,15 +1,14 @@
-package com.mazeproject.servlets.ajax;
+package com.mazeproject.servlets;
 
-import com.mazeproject.servlets.support.UserSessionStorage;
 import java.io.IOException;
+import java.io.PrintWriter;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import org.json.JSONObject;
 
-public class GetUserData extends HttpServlet {
+public class MyMazes extends HttpServlet {
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
@@ -23,7 +22,7 @@ public class GetUserData extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        throw new UnsupportedOperationException("This operation is not supported");
+        ;
     }
 
     /**
@@ -37,20 +36,6 @@ public class GetUserData extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        HttpSession session = request.getSession();
-        JSONObject ob = new JSONObject();
-        if(session.getAttribute("loginData")!=null) {
-            String name = ((UserSessionStorage)session.getAttribute("loginData"))
-                    .getUserEntity().getName();
-            Integer money = ((UserSessionStorage)session.getAttribute("loginData"))
-                    .getUserEntity().getMoney();
-            ob.put("name", name);
-            ob.put("loggedIn",true);
-            ob.put("money",money);
-        } else {
-            ob.put("loggedIn",false);
-        }
-        response.setContentType("application/json");
-        response.getWriter().print(ob.toString());
+        ;
     }
 }

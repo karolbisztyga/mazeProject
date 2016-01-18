@@ -31,6 +31,10 @@ public class UserEntity implements Serializable {
     public UserEntity() {
         this(null, null, null, 0);
     }
+    
+    public UserEntity(String name, String password, int money) {
+        this(name, null, password, money);
+    }
 
     public UserEntity(String name, String email, String password) {
         this(name, email, password, 0);
@@ -42,9 +46,13 @@ public class UserEntity implements Serializable {
         this.password = password;
         this.money = money;
     }
-    
+
     public int getId() {
         return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -78,7 +86,5 @@ public class UserEntity implements Serializable {
     public void setMoney(int money) {
         this.money = money;
     }
-    
-    
     
 }
